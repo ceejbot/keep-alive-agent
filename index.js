@@ -8,7 +8,6 @@ var
 
 function KeepAliveAgent(options)
 {
-
 	options = options || {};
 	http.Agent.call(this, options);
 
@@ -56,7 +55,7 @@ KeepAliveAgent.prototype.freeHandler = function(socket, host, port, localAddress
 
 		this.addRequest(nextRequest, host, port, localAddress);
 	}
-}
+};
 
 KeepAliveAgent.prototype.addRequest = function(request, host, port, localAddress)
 {
@@ -121,8 +120,8 @@ HTTPSKeepAliveAgent.prototype.defaultPort = 443;
 
 HTTPSKeepAliveAgent.prototype.isSocketUsable = function(socket)
 {
-	// TLS sockets null out their ssl field in destroy() and
-	// do not set a destroyed flag the way normal sockets do.
+	// TLS sockets null out their secure pair's ssl field in destroy() and
+	// do not set a destroyed flag the way non-secure sockets do.
 	return socket.pair && socket.pair.ssl;
 };
 
