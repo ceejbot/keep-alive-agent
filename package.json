@@ -1,0 +1,27 @@
+{
+	"name": "keep-alive-agent",
+	"version": "0.0.1",
+	"description": "a keep-alive agent for http and https",
+	"contributors": [
+		"C J Silverio <ceejceej@gmail.com> (http://ceejbot.tumblr.com/)",
+		"Danny Coates <dannycoates@gmail.com> (https://github.com/dannycoates/)"
+	],
+	"main": "index.js",
+	"scripts": {
+		"test": "mocha -R spec test/*.js"
+	},
+	"repository": "",
+	"keywords": [
+		"keep-alive",
+		"http",
+		"https",
+		"agent"
+	],
+	"author": "",
+	"license": "MIT",
+	"devDependencies":
+	{
+		"chai": "*",
+		"mocha": "*"
+	}
+}
