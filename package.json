@@ -10,7 +10,7 @@
 	"scripts": {
 		"test": "mocha -R spec test/*.js"
 	},
-	"repository": "",
+	"repository": "git://github.com/ceejbot/keep-alive-agent.git",
 	"keywords": [
 		"keep-alive",
 		"http",

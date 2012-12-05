@@ -1,24 +1,20 @@
 /*global describe:true, it:true, before:true, after:true */
 
 var
-chai = require('chai'),
+	chai = require('chai'),
 	assert = chai.assert,
-	expect = chai.expect,
-	should = chai.should();
-
-var
-http = require('http'),
+	should = chai.should(),
+	http = require('http'),
 	https = require('https'),
 	KeepAliveAgent = require('../index'),
-	util = require('util');
+	util = require('util')
+	;
 
 
 var serverConfig = {
 	hostname: 'localhost',
 	port: 8000
 };
-
-
 
 function makeTestRequest(agent, callback)
 {
@@ -31,52 +27,32 @@ function makeTestRequest(agent, callback)
 	}, callback);
 }
 
-function makeTestServer()
-{
-	var s = http.createServer(function(request, response)
-	{
-		response.end("pong")
-	});
-	s.listen(serverConfig.port);
-	return s;
-}
-
-var server;
-
-beforeEach(function(done)
-{
-	// set up a test server to make requests against
-	server = makeTestServer();
-	server.on('listening', done);
-});
-
-afterEach(function()
-{
-	server.close();
-	server = null;
-});
-
-
 describe('KeepAliveAgent', function()
 {
+	var server;
 
-	// if a socket is destroyed, it's not returned to the idle list
+	beforeEach(function(done)
+	{
+		server = http.createServer(function(request, response)
+		{
+			response.end("pong")
+		});
+		server.on('listening', done);
+		server.listen(serverConfig.port);
+	});
+
+	afterEach(function()
+	{
+		server.close();
+		server = null;
+	});
+
 	it('constructs an agent with the passed-in options', function()
 	{
-		var agent = new KeepAliveAgent(
-		{
-			maxSockets: 3
-		});
+		var agent = new KeepAliveAgent({ maxSockets: 3 });
 
 		assert(agent.maxSockets === 3, 'max sockets option not passed through');
 		agent.should.have.property('idleSockets');
-	});
-
-	it('constructs a secure keep-alive agent', function()
-	{
-		var secureAgent = new KeepAliveAgent.Secure(
-		{});
-		assert(secureAgent.defaultPort === 443);
 	});
 
 	it('provides a socket to a request', function(done)
@@ -157,28 +133,15 @@ describe('KeepAliveAgent', function()
 		var name = serverConfig.hostname + ':' + serverConfig.port;
 
 		agent.idleSockets[name] = [];
-		agent.idleSockets[name].push(
-		{
-			destroyed: true
-		});
-		agent.idleSockets[name].push(
-		{
-			destroyed: true
-		});
-		agent.idleSockets[name].push(
-		{
-			destroyed: true
-		});
-		agent.idleSockets[name].push(
-		{
-			destroyed: true
-		});
+		agent.idleSockets[name].push({ destroyed: true });
+		agent.idleSockets[name].push({ destroyed: true });
+		agent.idleSockets[name].push({ destroyed: true });
+		agent.idleSockets[name].push({ destroyed: true });
 
 		var socket = agent.nextIdleSocket(name);
 		assert.equal(socket, null);
 		assert.equal(agent.idleSockets[name].length, 0);
 	});
-
 
 	it('reuses a good socket until it is destroyed', function(done)
 	{
@@ -191,22 +154,46 @@ describe('KeepAliveAgent', function()
 			process.nextTick(function()
 			{
 				agent.idleSockets.should.have.property(name);
-				agent.idleSockets[name].should.be.an('array');
-				agent.idleSockets[name].length.should.equal(1);
+				assert(Array.isArray(agent.idleSockets[name]), 'expected idle sockets list for ' + name + ' to be an array');
+				assert.equal(agent.idleSockets[name].length, 1, 'expected idle sockets list to contain exactly 1 item');
 				var socket = agent.idleSockets[name][0];
-				socket._requestCount.should.equal(1);
+				assert.equal(socket._requestCount, 1, 'expected socket request count to be 1')
 
 				makeTestRequest(agent, function(response)
 				{
 					process.nextTick(function()
 					{
 						agent.idleSockets.should.have.property(name);
-						agent.idleSockets[name].length.should.equal(0);
+						assert.equal(agent.idleSockets[name].length, 0, 'expected zero sockets in our idle queue');
 						done();
 					});
 					response.connection.destroy();
 				});
 			});
+		});
+	});
+});
+
+describe('KeepAliveAgent.Secure', function()
+{
+	it('can construct a secure keep-alive agent', function()
+	{
+		var secureAgent = new KeepAliveAgent.Secure({});
+		assert(secureAgent.defaultPort === 443);
+	});
+
+	it('provides a socket to a request', function(done)
+	{
+		https.get(
+		{
+			hostname: 'one.voxer.com',
+			port: 443,
+			path: '/ping',
+			agent: new KeepAliveAgent.Secure(),
+		}, function(response)
+		{
+			// if we get here at all, it worked
+			done();
 		});
 	});
 
@@ -227,10 +214,10 @@ describe('KeepAliveAgent', function()
 			process.nextTick(function()
 			{
 				agent.idleSockets.should.have.property(name);
-				agent.idleSockets[name].should.be.an('array');
-				agent.idleSockets[name].length.should.equal(1);
+				assert(Array.isArray(agent.idleSockets[name]), 'expected idle sockets list for ' + name + ' to be an array');
+				assert.equal(agent.idleSockets[name].length, 1, 'expected idle sockets list to contain exactly 1 item');
 				var socket = agent.idleSockets[name][0];
-				socket._requestCount.should.equal(1);
+				assert.equal(socket._requestCount, 1, 'expected socket request count to be 1')
 
 				https.get(getOptions, function(response)
 				{
@@ -244,6 +231,23 @@ describe('KeepAliveAgent', function()
 				});
 			});
 		});
+	});
+
+	it('does not attempt to use destroyed sockets from the idle list', function()
+	{
+		var agent = new KeepAliveAgent.Secure();
+		var name = serverConfig.hostname + ':' + serverConfig.port;
+
+		agent.idleSockets[name] = [];
+		agent.idleSockets[name].push({ pair: { ssl: null } });
+		agent.idleSockets[name].push({ pair: { ssl: null } });
+		agent.idleSockets[name].push({ pair: { ssl: null } });
+		agent.idleSockets[name].push({ pair: { ssl: null } });
+		agent.idleSockets[name].push({ pair: { ssl: null } });
+
+		var socket = agent.nextIdleSocket(name);
+		assert.equal(socket, null);
+		assert.equal(agent.idleSockets[name].length, 0);
 	});
 
 });
