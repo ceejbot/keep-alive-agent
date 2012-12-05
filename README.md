@@ -1,5 +1,7 @@
 # keep-alive-agent
 
+[![Build Status](https://travis-ci.org/ceejbot/keep-alive-agent.png)](https://travis-ci.org/ceejbot/keep-alive-agent)
+
 keep-alive-agent is an HTTP connection pool agent for node.js that re-uses sockets. It is simpler than some agents that also solve this problem because it does not attempt to replace the Agent provided by node. If you want to re-use connections, use this agent. If you want the default node behavior, use the default global agent.
 
 ## Usage
