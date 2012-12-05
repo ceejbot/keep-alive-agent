@@ -66,10 +66,7 @@ KeepAliveAgent.prototype.addRequest = function(request, host, port, localAddress
 	if (socket)
 		request.onSocket(socket);
 	else
-	{
-		// We have no idle sockets to re-use, so make a new one the usual way.
 		return http.Agent.prototype.addRequest.call(this, request, host, port, localAddress);
-	}
 };
 
 KeepAliveAgent.prototype.nextIdleSocket = function(name)
@@ -81,11 +78,11 @@ KeepAliveAgent.prototype.nextIdleSocket = function(name)
 	while(socket = this.idleSockets[name].shift())
 	{
 		// Check that this socket is still healthy after sitting around on the shelf.
+		// This check is the reason this module exists.
 		if (this.isSocketUsable(socket))
 			return socket;
 	}
 
-	// Sadly, no good sockets.
 	return null;
 };
 
