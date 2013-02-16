@@ -4,6 +4,10 @@
 
 keep-alive-agent is an HTTP connection pool [agent](http://nodejs.org/api/http.html#http_class_http_agent) for node.js that re-uses sockets. It is simpler than some agents that also solve this problem because it does not attempt to replace the Agent provided by node. If you want to re-use connections, use this agent. If you want the default node behavior, use the default global agent.
 
+## Update
+
+The [node.js bug](https://github.com/joyent/node/issues/4373) this module was written to work around was fixed in node 0.8.20. It is still handy as a general keep-alive agent, however.
+
 ## Usage
 
 __new KeepAliveAgent(<i>options-hash</i>)__
