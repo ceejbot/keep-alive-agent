@@ -58,7 +58,7 @@ https.get(getOptions, function(response)
 
 ## See Also
 
-For other implementations, see [agentkeepalive](https://github.com/TBEDP/agentkeepalive) and the [request](https://github.com/mikeal/request) module's [ForeverAgent](https://github.com/mikeal/request/blob/master/forever.js).
+For other implementations, see [agentkeepalive](https://github.com/TBEDP/agentkeepalive) and [forever-agent](https://github.com/request/forever-agent).
 
 ## Licence
 
